@@ -1,9 +1,12 @@
 package playwrightsessions;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.BrowserType.LaunchOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.*;
+
+import java.util.Arrays;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PlaywrightBasics {
@@ -18,18 +21,24 @@ public class PlaywrightBasics {
         LOGGER.info("Launch Browser " + browserName);
 
         playwright = Playwright.create();
-        if (browserName.equalsIgnoreCase("chromium")){
-            browserType = playwright.chromium();
-        } else if (browserName.equalsIgnoreCase("firefox")) {
+        LaunchOptions lp = new LaunchOptions();
+        lp.setHeadless(false);
+
+        if (browserName.equalsIgnoreCase("firefox")) {
             browserType = playwright.firefox();
-        } else {
+        } else if (browserName.equalsIgnoreCase("safari")){
             browserType = playwright.webkit();
+        } else {
+            lp.setChannel(browserName.toLowerCase());
+            lp.setArgs(Arrays.asList("--start-maximized"));
+            browserType = playwright.chromium();
         }
 
-        browser = browserType.launch(new BrowserType.LaunchOptions().setHeadless(false));
+        browser = browserType.launch(lp);
         System.out.println("Create Context and Page");
         context = browser.newContext();
         page = context.newPage();
+
     }
 
     public static void closeBrowser(){
@@ -37,7 +46,10 @@ public class PlaywrightBasics {
         context.close();
         System.out.println("Close Browser");
         browser.close();
+        playwright.close();
 
     }
+
+
 
 }
